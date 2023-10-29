@@ -51,17 +51,17 @@ spec:
               key: DB_USERNAME
         - name: DB_NAME
           valueFrom:
-            secretKeyRef:
+            configMapKeyRef:
               name: db-env
               key: DB_NAME
         - name: DB_HOST
           valueFrom:
-            secretKeyRef:
+            configMapKeyRef:
               name: db-env
               key: DB_HOST
         - name: DB_PORT
           valueFrom:
-            secretKeyRef:
+            configMapKeyRef:
               name: db-env
               key: DB_PORT
         - name: DB_PASSWORD
