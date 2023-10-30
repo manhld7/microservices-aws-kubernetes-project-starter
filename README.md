@@ -1,7 +1,7 @@
 # Coworking Space Service Extension
 The Coworking Space Service is a set of APIs that enables users to request one-time tokens and administrators to authorize access to a coworking space. This service follows a microservice pattern and the APIs are split into distinct services that can be deployed and managed independently of one another.
 
-For this project, you are a DevOps engineer who will be collaborating with a team that is building an API for business analysts. The API provides business analysts basic analytics data on user activity in the service. The application they provide you functions as expected locally and you are expected to help build a pipeline to deploy it in Kubernetes.
+For this project, i am a DevOps engineer who will be collaborating with a team that is building an API for business analysts. The API provides business analysts basic analytics data on user activity in the service. The application they provide me functions as expected locally and i am expected to help build a pipeline to deploy it in Kubernetes.
 
 ## Getting Started
 
@@ -11,6 +11,7 @@ For this project, you are a DevOps engineer who will be collaborating with a tea
 2. Docker CLI - build and run Docker images locally
 3. `kubectl` - run commands against a Kubernetes cluster
 4. `helm` - apply Helm Charts to a Kubernetes cluster
+5. `psql` - use to test database connection
 
 #### Remote Resources
 1. AWS CodeBuild - build Docker images remotely
@@ -20,6 +21,12 @@ For this project, you are a DevOps engineer who will be collaborating with a tea
 5. GitHub - pull and clone code
 
 ### Setup
+
+#### Note:
+1. You must connect to AWS from your local machine via AWS Access Key ID, AWS Secret Access Key, and AWS Session Token.
+2. Create ECR repository, CodeBuild project, EKS cluster and Node group. Note that the Instance type of the node group must match the CodeBuild environment image.
+3. Use `aws eks update-kubeconfig --name <EKS_CLUSTER_NAME>` before running the commands below.
+
 #### 1. Configure a Database
 Set up a Postgres database using a Helm Chart.
 
@@ -42,7 +49,7 @@ export POSTGRES_PASSWORD=$(kubectl get secret --namespace default analytics-db-p
 echo $POSTGRES_PASSWORD
 ```
 
-You shoud use the `echo -n $POSTGRES_PASSWORD | base64` command to get the password (base64) to use for deployment file
+You shoud use the `echo -n $POSTGRES_PASSWORD | base64` command to get the password (base64) to use for database deployment file
 
 <sup><sub>* The instructions are adapted from [Bitnami's PostgreSQL Helm Chart](https://artifacthub.io/packages/helm/bitnami/postgresql).</sub></sup>
 
@@ -53,7 +60,6 @@ The database is accessible within the cluster. This means that when you will hav
 ```bash
 kubectl port-forward --namespace default svc/analytics-db-postgresql 5432:5432 & PGPASSWORD=$POSTGRES_PASSWORD psql --host 127.0.0.1 -U postgres -d postgres -p 5432
 ```
-
 
 4. Run Seed Files
 We will need to run the seed files in `db/` in order to create the tables and populate them with data.
@@ -104,23 +110,22 @@ The benefit here is that it's explicitly set. However, note that the `DB_PASSWOR
 
 ### Deliverables
 1. `Dockerfile`
-2. Screenshot of AWS CodeBuild pipeline
-3. Screenshot of AWS ECR repository for the application's repository
-4. Screenshot of `kubectl get svc`
-5. Screenshot of `kubectl get pods`
-6. Screenshot of `kubectl describe svc <DATABASE_SERVICE_NAME>`
-7. Screenshot of `kubectl describe deployment <SERVICE_NAME>`
-8. All Kubernetes config files used for deployment (ie YAML files)
-9. Screenshot of AWS CloudWatch logs for the application
-10. `README.md` file in your solution that serves as documentation for your user to detail how your deployment process works and how the user can deploy changes. The details should not simply rehash what you have done on a step by step basis. Instead, it should help an experienced software developer understand the technologies and tools in the build and deploy process as well as provide them insight into how they would release new builds.
+2. [Screenshot of AWS CodeBuild pipeline](images/3a-CodeBuild-pipeline.png)
+3. [Screenshot of AWS ECR repository for the application's repository](images/3b-ECR-repository.png)
+4. [Screenshot of kubectl get svc](images/5a-kubectl-get-svc.png)
+5. [Screenshot of kubectl get pods](images/5b-kubectl-get-pods.png)
+6. [Screenshot of kubectl describe svc <DATABASE_SERVICE_NAME>](images/5c-kubectl-describe-svc-database-service.png)
+7. [Screenshot of kubectl describe deployment <SERVICE_NAME>](images/5d-kubectl-describe-deployment-service.png)
+8. [All Kubernetes config files used for deployment (ie YAML files)](./images/)
+9. ![Screenshot of AWS CloudWatch logs for the application](images/6b-container-insight.png)
 
 
 ### Stand Out Suggestions
 Please provide up to 3 sentences for each suggestion. Additional content in your submission from the standout suggestions do _not_ impact the length of your total submission.
-1. Specify reasonable Memory and CPU allocation in the Kubernetes deployment configuration
-2. In your README, specify what AWS instance type would be best used for the application? Why?
-3. In your README, provide your thoughts on how we can save on costs?
+1. When configuring Memory and CPU allocation in the Kubernetes deployment configuration, I chose the Instance Type for Node Group to be a1.large, because when deploying the application, there are some operations such as pulling docker images that will cause errors if we use "micro" Instance Types
+2. In this project I used Instance type a1.large because if using smaller types, when application performance increases, it will not be able to run because of memory overflow.
+3. I think to save costs, we should choose the appropriate Instance type. To know which one to choose, we should run the application locally first, then calculate and choose the appropriate Instance Type. We should also choose the appropriate number of EKS node groups because too many can cause redundancy and waste of resources.
 
 ### Best Practices
 * Dockerfile uses an appropriate base image for the application being deployed. Complex commands in the Dockerfile include a comment describing what it is doing.
-* The Docker images use semantic versioning with three numbers separated by dots, e.g. `1.2.1` and  versioning is visible in the  screenshot. See [Semantic Versioning](https://semver.org/) for more details.
+* The Docker images use semantic versioning with three numbers separated by dots, e.g. `1.2.1` and  versioning is visible in the screenshot. See [Semantic Versioning](https://semver.org/) for more details.
