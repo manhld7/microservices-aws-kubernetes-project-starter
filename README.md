@@ -104,8 +104,8 @@ The benefit here is that it's explicitly set. However, note that the `DB_PASSWOR
 ## Project Instructions
 1. Set up a Postgres database with a Helm Chart.
 2. Create a `Dockerfile` for the Python application. Use a base image that is Python-based.
-3. Write a simple build pipeline with AWS CodeBuild to build and push a Docker image into AWS ECR
-4. Create a service and deployment using Kubernetes configuration files to deploy the application
+3. Write a simple build pipeline with AWS CodeBuild to build and push a Docker image into AWS ECR.
+4. Create a service and deployment using Kubernetes configuration files to deploy the application.
 5. Check AWS CloudWatch for application logs.
 
 ### Deliverables
