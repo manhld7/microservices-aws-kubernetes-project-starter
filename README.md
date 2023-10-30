@@ -109,7 +109,7 @@ The benefit here is that it's explicitly set. However, note that the `DB_PASSWOR
 5. Check AWS CloudWatch for application logs.
 
 ### Deliverables
-1. `Dockerfile`
+1. [Dockerfile](analytics/Dockerfile)
 2. [Screenshot of AWS CodeBuild pipeline](images/3a-CodeBuild-pipeline.png)
 3. [Screenshot of AWS ECR repository for the application's repository](images/3b-ECR-repository.png)
 4. [Screenshot of kubectl get svc](images/5a-kubectl-get-svc.png)
@@ -117,7 +117,7 @@ The benefit here is that it's explicitly set. However, note that the `DB_PASSWOR
 6. [Screenshot of kubectl describe svc <DATABASE_SERVICE_NAME>](images/5c-kubectl-describe-svc-database-service.png)
 7. [Screenshot of kubectl describe deployment <SERVICE_NAME>](images/5d-kubectl-describe-deployment-service.png)
 8. [All Kubernetes config files used for deployment (ie YAML files)](./images/)
-9. ![Screenshot of AWS CloudWatch logs for the application](images/6b-container-insight.png)
+9. [Screenshot of AWS CloudWatch logs for the application](images/6b-container-insight.png)
 
 
 ### Stand Out Suggestions
