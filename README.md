@@ -25,22 +25,24 @@ Set up a Postgres database using a Helm Chart.
 
 1. Set up Bitnami Repo
 ```bash
-helm repo add <REPO_NAME> https://charts.bitnami.com/bitnami
+helm repo add analytics-repo https://charts.bitnami.com/bitnami
 ```
 
 2. Install PostgreSQL Helm Chart
-```
-helm install <SERVICE_NAME> <REPO_NAME>/postgresql
+```bash
+helm install analytics-db analytics-repo/postgresql --set primary.persistence.enabled=false
 ```
 
-This should set up a Postgre deployment at `<SERVICE_NAME>-postgresql.default.svc.cluster.local` in your Kubernetes cluster. You can verify it by running `kubectl svc`
+This should set up a Postgre deployment at `analytics-db-postgresql.default.svc.cluster.local` in your Kubernetes cluster. You can verify it by running `kubectl svc`
 
 By default, it will create a username `postgres`. The password can be retrieved with the following command:
 ```bash
-export POSTGRES_PASSWORD=$(kubectl get secret --namespace default <SERVICE_NAME>-postgresql -o jsonpath="{.data.postgres-password}" | base64 -d)
+export POSTGRES_PASSWORD=$(kubectl get secret --namespace default analytics-db-postgresql -o jsonpath="{.data.postgres-password}" | base64 -d)
 
 echo $POSTGRES_PASSWORD
 ```
+
+You shoud use the `echo -n $POSTGRES_PASSWORD | base64` command to get the password (base64) to use for deployment file
 
 <sup><sub>* The instructions are adapted from [Bitnami's PostgreSQL Helm Chart](https://artifacthub.io/packages/helm/bitnami/postgresql).</sub></sup>
 
@@ -49,22 +51,15 @@ The database is accessible within the cluster. This means that when you will hav
 
 * Connecting Via Port Forwarding
 ```bash
-kubectl port-forward --namespace default svc/<SERVICE_NAME>-postgresql 5432:5432 &
-    PGPASSWORD="$POSTGRES_PASSWORD" psql --host 127.0.0.1 -U postgres -d postgres -p 5432
+kubectl port-forward --namespace default svc/analytics-db-postgresql 5432:5432 & PGPASSWORD=$POSTGRES_PASSWORD psql --host 127.0.0.1 -U postgres -d postgres -p 5432
 ```
 
-* Connecting Via a Pod
-```bash
-kubectl exec -it <POD_NAME> bash
-PGPASSWORD="<PASSWORD HERE>" psql postgres://postgres@<SERVICE_NAME>:5432/postgres -c <COMMAND_HERE>
-```
 
 4. Run Seed Files
 We will need to run the seed files in `db/` in order to create the tables and populate them with data.
 
 ```bash
-kubectl port-forward --namespace default svc/<SERVICE_NAME>-postgresql 5432:5432 &
-    PGPASSWORD="$POSTGRES_PASSWORD" psql --host 127.0.0.1 -U postgres -d postgres -p 5432 < <FILE_NAME.sql>
+kubectl port-forward --namespace default svc/analytics-db-postgresql 5432:5432 & PGPASSWORD=$POSTGRES_PASSWORD psql --host 127.0.0.1 -U postgres -d postgres -p 5432 < <FILE_NAME.sql>
 ```
 
 ### 2. Running the Analytics Application Locally
@@ -89,23 +84,23 @@ There are multiple ways to set environment variables in a command. They can be s
 
 If we set the environment variables by prepending them, it would look like the following:
 ```bash
-DB_USERNAME=username_here DB_PASSWORD=password_here python app.py
+DB_USERNAME=postgres DB_PASSWORD=$POSTGRES_PASSWORD python app.py
 ```
 The benefit here is that it's explicitly set. However, note that the `DB_PASSWORD` value is now recorded in the session's history in plaintext. There are several ways to work around this including setting environment variables in a file and sourcing them in a terminal session.
 
 3. Verifying The Application
 * Generate report for check-ins grouped by dates
-`curl <BASE_URL>/api/reports/daily_usage`
+`curl http://127.0.0.1:5153/api/reports/daily_usage`
 
 * Generate report for check-ins grouped by users
-`curl <BASE_URL>/api/reports/user_visits`
+`curl http://127.0.0.1:5153/api/reports/user_visits`
 
 ## Project Instructions
-1. Set up a Postgres database with a Helm Chart
+1. Set up a Postgres database with a Helm Chart.
 2. Create a `Dockerfile` for the Python application. Use a base image that is Python-based.
 3. Write a simple build pipeline with AWS CodeBuild to build and push a Docker image into AWS ECR
 4. Create a service and deployment using Kubernetes configuration files to deploy the application
-5. Check AWS CloudWatch for application logs
+5. Check AWS CloudWatch for application logs.
 
 ### Deliverables
 1. `Dockerfile`
