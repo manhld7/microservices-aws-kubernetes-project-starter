@@ -24,8 +24,10 @@
 #### Configure a Database and run on AWS EKS
 1. You must connect to AWS from your local machine via AWS Access Key ID, AWS Secret Access Key, and AWS Session Token.
 
-2. Create EKS cluster and Node group. The Instance type of the Node group must match the CodeBuild environment image as mentioned above.
+2. Create EKS Cluster and Node group. The Instance type of the Node group must match the CodeBuild environment image as mentioned above.
 Set up a Postgres database using a Helm Chart.
+
+* Note that we must create role contains `AmazonEKSClusterPolicy` policy for EKS Cluster and a role contains four policies: `AmazonEKSWorkerNodePolicy`, `AmazonEC2ContainerRegistryReadOnly`, `AmazonEKS_CNI_Policy`, `AmazonEMRReadOnlyAccessPolicy_v2` for AWS Node Group.
 
 3. Use `aws eks update-kubeconfig --name <EKS_CLUSTER_NAME>` before running the below command. This command will connect local Kubernet to AWS EKS cluster. `EKS_CLUSTER_NAME` is the cluster name was created before.
 
@@ -86,9 +88,11 @@ curl https://raw.githubusercontent.com/aws-samples/amazon-cloudwatch-container-i
 ```
 
 * Note that we must add `CloudWatchAgentServerPolicy` policy to EKS Node Group.
-
+* To make it easier to check the logs in CloudWatch, we should add `livenessProbe` and `readinessProbe` in Analytics deployment file.
 
 #### Note: 
+* Use `kubectl get deployments` to list available deployments.
+* We can use `kubectl delete deployment <DEPLOYMENT_NAME>` to delete deployment, use `kubect delete svc <SERVICE_NAME>` to delete specific service and `kubectl delete pod <POD_NAME>` to delete specific pod.
 
 ### Deliverables
 1. [Dockerfile](analytics/Dockerfile)
@@ -99,15 +103,10 @@ curl https://raw.githubusercontent.com/aws-samples/amazon-cloudwatch-container-i
 6. [Screenshot of kubectl describe svc <DATABASE_SERVICE_NAME>](images/5c-kubectl-describe-svc-database-service.png)
 7. [Screenshot of kubectl describe deployment <SERVICE_NAME>](images/5d-kubectl-describe-deployment-service.png)
 8. [All Kubernetes config files used for deployment (ie YAML files)](./images/)
-9. [Screenshot of AWS CloudWatch logs for the application](images/6b-container-insight.png)
+9. [Screenshot of AWS CloudWatch logs for the application](images/6-cloudwatch-log-events.png)
 
 
-### Stand Out Suggestions
-Please provide up to 3 sentences for each suggestion. Additional content in your submission from the standout suggestions do _not_ impact the length of your total submission.
+### Additional
 1. When configuring Memory and CPU allocation in the Kubernetes deployment configuration, I chose the Instance Type for Node Group to be a1.large, because when deploying the application, there are some operations such as pulling docker images that will cause errors if we use "micro" Instance Types
 2. In this project I used Instance type a1.large because if using smaller types, when application performance increases, it will not be able to run because of memory overflow.
-3. I think to save costs, we should choose the appropriate Instance type. To know which one to choose, we should run the application locally first, then calculate and choose the appropriate Instance Type. We should also choose the appropriate number of EKS node groups because too many can cause redundancy and waste of resources.
-
-### Best Practices
-* Dockerfile uses an appropriate base image for the application being deployed. Complex commands in the Dockerfile include a comment describing what it is doing.
-* The Docker images use semantic versioning with three numbers separated by dots, e.g. `1.2.1` and  versioning is visible in the screenshot. See [Semantic Versioning](https://semver.org/) for more details.
+3. To save costs, we should choose the appropriate Instance type. To know which one to choose, we should run the application locally first, then calculate and choose the appropriate Instance Type. We should also choose the appropriate number of EKS node groups because too many can cause redundancy and waste of resources.
